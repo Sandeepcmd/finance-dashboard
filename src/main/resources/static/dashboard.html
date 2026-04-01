@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-chart-line"></i>
+                <span>FinDash</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+                <i class="fas fa-angles-left"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard" onclick="navigate('dashboard', this)">
+                <i class="fas fa-grid-2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="records" onclick="navigate('records', this)" id="navRecords">
+                <i class="fas fa-receipt"></i>
+                <span>Records</span>
+            </a>
+            <a href="#" class="nav-item" data-page="users" onclick="navigate('users', this)" id="navUsers">
+                <i class="fas fa-users-gear"></i>
+                <span>Users</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details">
+                    <span class="user-name" id="userName">Admin</span>
+                    <span class="user-role" id="userRole">ADMIN</span>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="top-header">
+            <button class="mobile-menu" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-title">
+                <h2 id="pageTitle">Dashboard</h2>
+                <p id="pageSubtitle">Financial overview and analytics</p>
+            </div>
+            <div class="header-actions">
+                <div class="header-date">
+                    <i class="fas fa-calendar-day"></i>
+                    <span id="currentDate"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Page -->
+        <section class="page active" id="pageDashboard">
+            
+            <!-- Role Banners -->
+            <div class="role-banner" id="bannerAdmin" style="display:none">
+                <div class="banner-glass">
+                    <h3><i class="fas fa-crown"></i> Administrator Portal</h3>
+                    <p>Full system access. Manage users, oversee all financial records, and monitor platform health.</p>
+                </div>
+            </div>
+            
+            <div class="role-banner" id="bannerAnalyst" style="display:none">
+                <div class="banner-glass">
+                    <h3><i class="fas fa-chart-line"></i> Analytics Workspace</h3>
+                    <p>Review financial records and analyze transactions. Access comprehensive breakdown of income and expenses.</p>
+                </div>
+            </div>
+            
+            <div class="role-banner" id="bannerViewer" style="display:none">
+                <div class="banner-glass">
+                    <h3><i class="fas fa-eye"></i> Executive Summary</h3>
+                    <p>Read-only overview of platform financial performance and key metrics.</p>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card card-income">
+                    <div class="card-icon"><i class="fas fa-arrow-trend-up"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Total Income</span>
+                        <span class="card-value" id="totalIncome">₹0</span>
+                    </div>
+                </div>
+                <div class="summary-card card-expense">
+                    <div class="card-icon"><i class="fas fa-arrow-trend-down"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Total Expense</span>
+                        <span class="card-value" id="totalExpense">₹0</span>
+                    </div>
+                </div>
+                <div class="summary-card card-balance">
+                    <div class="card-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Net Balance</span>
+                        <span class="card-value" id="netBalance">₹0</span>
+                    </div>
+                </div>
+                <div class="summary-card card-records">
+                    <div class="card-icon"><i class="fas fa-file-lines"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Total Records</span>
+                        <span class="card-value" id="totalRecords">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="chart-card glass">
+                    <h3><i class="fas fa-chart-area"></i> Monthly Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card glass">
+                    <h3><i class="fas fa-chart-pie"></i> Category Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-activity glass">
+                <h3><i class="fas fa-clock-rotate-left"></i> Recent Activity</h3>
+                <div class="activity-list" id="activityList">
+                    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Records Page -->
+        <section class="page" id="pageRecords">
+            <div class="page-actions">
+                <div class="filters-bar glass">
+                    <div class="filter-group">
+                        <select id="filterType" onchange="loadRecords()">
+                            <option value="">All Types</option>
+                            <option value="INCOME">Income</option>
+                            <option value="EXPENSE">Expense</option>
+                        </select>
+                        <input type="text" id="filterCategory" placeholder="Category..." onchange="loadRecords()">
+                        <input type="date" id="filterStartDate" onchange="loadRecords()">
+                        <input type="date" id="filterEndDate" onchange="loadRecords()">
+                        <input type="text" id="filterSearch" placeholder="Search description..." oninput="debounceSearch()">
+                    </div>
+                    <button class="btn btn-primary" id="btnAddRecord" onclick="openRecordModal()">
+                        <i class="fas fa-plus"></i> Add Record
+                    </button>
+                </div>
+            </div>
+
+            <div class="data-table glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Created By</th>
+                            <th id="thActions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody">
+                        <tr><td colspan="7" class="loading-cell"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination" id="recordsPagination"></div>
+            </div>
+        </section>
+
+        <!-- Users Page -->
+        <section class="page" id="pageUsers">
+            <div class="page-actions">
+                <div class="filters-bar glass">
+                    <div class="filter-group">
+                        <h3 style="margin:0"><i class="fas fa-users-gear"></i> User Management</h3>
+                    </div>
+                    <button class="btn btn-primary" onclick="openUserModal()">
+                        <i class="fas fa-user-plus"></i> Add User
+                    </button>
+                </div>
+            </div>
+
+            <div class="data-table glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="7" class="loading-cell"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Record Modal -->
+    <div class="modal-overlay" id="recordModal">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3 id="recordModalTitle"><i class="fas fa-plus-circle"></i> Add Record</h3>
+                <button class="modal-close" onclick="closeModal('recordModal')"><i class="fas fa-xmark"></i></button>
+            </div>
+            <form id="recordForm" onsubmit="submitRecord(event)">
+                <input type="hidden" id="recordId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" id="recordAmount" step="0.01" min="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="recordType" required>
+                            <option value="">Select Type</option>
+                            <option value="INCOME">Income</option>
+                            <option value="EXPENSE">Expense</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" id="recordCategory" required placeholder="e.g. Salary, Food, Rent">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="recordDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="recordDescription" rows="3" placeholder="Optional description..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('recordModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="recordSubmitBtn">
+                        <i class="fas fa-save"></i> Save Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3 id="userModalTitle"><i class="fas fa-user-plus"></i> Add User</h3>
+                <button class="modal-close" onclick="closeModal('userModal')"><i class="fas fa-xmark"></i></button>
+            </div>
+            <form id="userForm" onsubmit="submitUser(event)">
+                <input type="hidden" id="userId">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="userFormName" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="userFormEmail" required placeholder="john@example.com">
+                </div>
+                <div class="form-group" id="userPasswordGroup">
+                    <label>Password</label>
+                    <input type="password" id="userFormPassword" placeholder="Min 6 characters" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="userFormRole" required>
+                        <option value="VIEWER">Viewer</option>
+                        <option value="ANALYST">Analyst</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
