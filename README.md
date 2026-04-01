@@ -1,25 +1,33 @@
-# Finance Dashboard Backend
+# Finance Dashboard Backend & Frontend
 
-A production-ready **Finance Data Processing and Access Control Backend** built with Spring Boot. Features JWT authentication, role-based access control (RBAC), financial records management, and real-time dashboard analytics.
+A production-ready **Finance Data Processing and Access Control Backend** built with Spring Boot, paired with an integrated **Vanilla HTML/JS Frontend Dashboard**. Features JWT authentication, robust role-based access control (RBAC), financial records management, and real-time dashboard analytics. The frontend is seamlessly served as static content by the Spring Boot application.
 
 ---
 
 ## 🏗️ Tech Stack
 
+### Backend
 | Technology | Purpose |
 |---|---|
-| **Java 17+** | Runtime (built with Java 21) |
-| **Spring Boot 3.2** | Application framework |
+| **Java 21** | Primary language & runtime |
+| **Spring Boot 3.4.4** | Core backend framework |
 | **Spring Security** | Authentication & authorization |
-| **Spring Data JPA** | Database access |
+| **Spring Data JPA** | Database access / ORM |
 | **MySQL 8.0** | Production database |
 | **H2** | Development / testing database |
-| **JWT (jjwt 0.12)** | Token-based authentication |
-| **Lombok** | Boilerplate reduction |
-| **Hibernate Validator** | Input validation |
+| **JWT (jjwt 0.12.6)** | Token-based stateless authentication |
+| **Lombok** | Boilerplate code reduction |
+| **Hibernate Validator** | Robust input validation |
 | **SpringDoc OpenAPI** | API documentation (Swagger UI) |
+| **JUnit 5 + Mockito** | Backend Testing |
 
-| **JUnit 5 + Mockito** | Testing |
+### Frontend
+| Technology | Purpose |
+|---|---|
+| **Vanilla HTML5** | Page structure |
+| **Vanilla CSS3** | Styling & layout |
+| **Vanilla JavaScript (ES6)** | Logic, API fetching, DOM manipulation |
+| **Chart.js** | Data visualization for the dashboard |
 
 ---
 
@@ -42,14 +50,18 @@ com.finance
 ├── exception/          # Global exception handling
 ├── util/               # Utility classes
 └── FinanceDashboardApplication.java
+
+src/main/resources
+├── static/             # 🌐 Frontend UI (HTML, CSS, JS)
+├── application.yml     # Core configurations (H2 default)
+└── application-prod.yml# Production configurations (MySQL)
 ```
 
 **Design Principles:**
 - Layered architecture with clear separation of concerns
-- DTOs for all API communication (no entity leakage)
-- Global exception handling with consistent error responses
-- Repository pattern for database operations
-- Service layer for business logic
+- DTOs for all API communication (preventing entity leakage)
+- Global exception handling providing consistent JSON error responses
+- Full inclusion of the Frontend inside `resources/static` for simplified monolithic deployment
 
 ---
 
@@ -101,37 +113,37 @@ com.finance
 
 ### Prerequisites
 
-- Java 17 or higher
-- Maven 3.8+ (or use the included wrapper)
+- Java 21
+- Maven 3.9+ (or use the included wrapper)
 - MySQL 8.0 (optional — H2 is the default)
 
-### Quick Start (H2 — zero config)
+### 1. Quick Start (H2 — zero config)
 
 ```bash
 # Clone the repository
 git clone <repo-url>
 cd finance-dashboard-backend
 
-# Build and run
+# Build and run using the Maven wrapper
 mvnw.cmd spring-boot:run      # Windows
-./mvnw spring-boot:run          # Linux/Mac
+./mvnw spring-boot:run        # Linux/Mac
 ```
 
-The app starts at `http://localhost:8080` with an embedded H2 database.
+The application (and the integrated Frontend UI) starts at `http://localhost:8080`.
+By default, the UI will be accessible immediately upon loading the root URL.
 
-### With MySQL
+### 2. Running with MySQL
 
 ```bash
-# 1. Create the database
+# 1. Create the database in MySQL
 mysql -u root -p -e "CREATE DATABASE finance_dashboard;"
 
 # 2. Run with MySQL profile
-mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=prod
 ```
+*Note: Ensure you have `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` set in your environment variables, or update `application-prod.yml` directly.*
 
-
-
-### Default Credentials
+### Default Credentials (Loaded with H2 / Initial DB Creation)
 
 | Role | Email | Password |
 |---|---|---|
@@ -141,119 +153,16 @@ mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
 
 ---
 
-## 📡 API Endpoints
+## 📡 API Endpoints Overview
 
-### Authentication (Public)
+For a comprehensive layout, use the integrated Swagger UI available at:
+👉 **`http://localhost:8080/swagger-ui.html`**
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Register a new user |
-| POST | `/api/auth/login` | Login and get JWT token |
-
-### User Management (Admin only)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/users` | Create a user |
-| GET | `/api/users` | List all users |
-| GET | `/api/users/{id}` | Get user by ID |
-| PUT | `/api/users/{id}` | Update user |
-| PATCH | `/api/users/{id}/status` | Activate/deactivate user |
-| DELETE | `/api/users/{id}` | Delete user |
-
-### Financial Records (Admin + Analyst)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/records` | Create a record |
-| GET | `/api/records` | List records (paginated, filterable) |
-| GET | `/api/records/{id}` | Get record by ID |
-| PUT | `/api/records/{id}` | Update record (Admin only) |
-| DELETE | `/api/records/{id}` | Soft-delete record (Admin only) |
-
-**Filtering Parameters:**
-- `type` — INCOME or EXPENSE
-- `category` — Category name
-- `startDate` / `endDate` — Date range (yyyy-MM-dd)
-- `search` — Description keyword search
-- `page`, `size`, `sort` — Pagination
-
-### Dashboard Analytics (All authenticated users)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/dashboard/summary` | Total income, expense, net balance |
-| GET | `/api/dashboard/category-summary` | Spending by category |
-| GET | `/api/dashboard/monthly-trends` | Monthly income vs expense |
-| GET | `/api/dashboard/recent-activity` | 10 most recent transactions |
-
----
-
-## 📋 Example API Requests
-
-### Register
-
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "secure123"
-  }'
-```
-
-### Login
-
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@finance.com",
-    "password": "admin123"
-  }'
-```
-
-### Create Financial Record
-
-```bash
-curl -X POST http://localhost:8080/api/records \
-  -H "Authorization: Bearer <JWT_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 5000.00,
-    "type": "INCOME",
-    "category": "Salary",
-    "date": "2025-03-01",
-    "description": "March monthly salary"
-  }'
-```
-
-### Get Records with Filters
-
-```bash
-curl "http://localhost:8080/api/records?type=EXPENSE&category=Food&page=0&size=10" \
-  -H "Authorization: Bearer <JWT_TOKEN>"
-```
-
-### Dashboard Summary
-
-```bash
-curl http://localhost:8080/api/dashboard/summary \
-  -H "Authorization: Bearer <JWT_TOKEN>"
-```
-
----
-
-## 📖 API Documentation
-
-Swagger UI is available at:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
-OpenAPI JSON: `http://localhost:8080/api-docs`
+### Summary
+- **`/api/auth/**`**: Registration & Login (Returns JWT).
+- **`/api/users/**`**: Manage users (Admin strictly).
+- **`/api/records/**`**: CRUD on financial records.
+- **`/api/dashboard/**`**: Analytics, summaries, and categorized spending data.
 
 ---
 
@@ -261,31 +170,26 @@ OpenAPI JSON: `http://localhost:8080/api-docs`
 
 ```bash
 mvnw.cmd test           # Windows
-./mvnw test              # Linux/Mac
+./mvnw test             # Linux/Mac
 ```
 
-Test coverage includes:
-- **AuthServiceTest** — Registration, login, duplicate email handling
-- **UserServiceTest** — Full CRUD, status management, validation
-- **DashboardServiceTest** — Summary, category breakdown, monthly trends
-- **AuthControllerTest** — Integration tests with MockMvc
+Test coverage encompasses key services (`AuthService`, `UserService`, `DashboardService`) and robust integration tests (`AuthControllerTest`).
 
 ---
 
 ## 🔮 Future Improvements
 
-- [ ] Refresh token mechanism
-- [ ] Audit logging (who changed what, when)
-- [ ] Export records to CSV/PDF
-- [ ] File attachment support for receipts
-- [ ] Budget tracking and alerts
-- [ ] Multi-currency support
-- [ ] Rate limiting with Bucket4j
-- [ ] Caching with Redis
-- [ ] Email notifications
-- [ ] Two-factor authentication (2FA)
 - [ ] Docker containerization
-- [ ] Integration tests with Testcontainers
+- [ ] Refresh token mechanism for persistent sessions
+- [ ] Comprehensive audit logging (who changed what, when, and from where)
+- [ ] Export records to CSV/PDF functionality
+- [ ] File attachment support for receipts
+- [ ] Budget tracking and real-time alerts
+- [ ] Multi-currency support
+- [ ] Rate limiting (e.g., configuring Bucket4j for API endpoint protection)
+- [ ] Redis layer for caching dashboard metrics
+- [ ] Email notifications via Spring Mail
+- [ ] Two-factor authentication (2FA)
 
 ---
 
