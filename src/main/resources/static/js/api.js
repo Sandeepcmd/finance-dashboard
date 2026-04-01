@@ -2,7 +2,7 @@
    API Client — Connects frontend to Spring Boot backend
    ═══════════════════════════════════════════════════════════════ */
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = '/api';
 
 const Api = {
     getToken() {
@@ -68,7 +68,7 @@ const Api = {
             return data;
         } catch (error) {
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                throw new Error('Cannot connect to server. Is the backend running on port 8080?');
+                throw new Error('Cannot connect to server. Please check your internet connection.');
             }
             throw error;
         }
